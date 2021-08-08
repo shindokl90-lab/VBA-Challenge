@@ -1,0 +1,126 @@
+Sub WallStreet()
+    
+For Each ws In Worksheets
+
+'Zero out any previous work     
+    ws.Range("I:Q").Clear
+
+'Define LastRow
+
+    LastRow = ws.Cells(Rows.Count, 1).End(xlUp).Row
+
+'Define Variables 
+    Dim Ticker As String
+    Dim PercentChange As Double
+    Dim YearlyChange As Double
+    Dim TotalVolume as Double
+    Dim StartPrice As Double
+    Dim EndPrice As Double
+    Dim CurrentMax As Double
+    Dim CurrentMin As Double
+    Dim MaxVol As Double
+    
+'CC summary table
+    Dim tickercounter As Long
+    Dim LastRowSum As Long
+    tickercounter = 2
+    TotalVolume = 0
+    
+
+'Create column headers
+
+    ws.Cells(1, 9).Value = "Ticker"
+    ws.Cells(1, 10).Value = "Yearly Change"
+    ws.Cells(1, 11).Value = "Percent Change"
+    ws.Cells(1, 12).Value = "Total Stock Volume"
+
+'Bonus Summary Table
+
+    ws.Cells(1, 16).Value = "Ticker"
+    ws.Cells(1, 17).Value = "Value"
+    ws.Cells(2, 15).Value = "Greatest % Increase"
+    ws.Cells(3, 15).Value = "Greatest % Decrease"
+    ws.Cells(4, 15).Value = "Greatest Total Volume"
+
+'For loop to run through Ticker symbol
+
+    For i = 2 To LastRow
+    
+'is the ticker/stock the same
+    
+        If ws.Cells(i, 1).Value <> ws.Cells(i - 1, 1).Value Then
+            Ticker = ws.Cells(i, 1).Value
+            StartPrice = ws.Cells(i, 3).Value
+            TotalVolume = TotalVolume + ws.Cells(i, 7).Value
+        
+        ElseIf ws.Cells(i, 1).Value <> ws.Cells(i + 1, 1).Value Then
+            ws.Cells(tickercounter, 9).Value = Ticker
+            EndPrice = ws.Cells(i, 6).Value
+            YearlyChange = EndPrice - StartPrice
+            ws.Cells(tickercounter, 10).Value = YearlyChange
+            
+                If StartPrice <> 0 Then
+                    PercentChange = YearlyChange / StartPrice
+                Else
+                    PercentChange = YearlyChange
+                End If
+            ws.Cells(tickercounter, 11).Value = PercentChange
+            ws.Cells(tickercounter, 11).NumberFormat = "0.00%"
+            
+            If PercentChange > CurrentMax Then
+                ws.Cells(2, 16).Value = Ticker
+                ws.Cells(2, 17).Value = PercentChange
+                ws.Cells(2, 17).NumberFormat = "0.00%"
+                CurrentMax = PercentChange
+            End If
+            
+            If PercentChange < CurrentMin Then
+                ws.Cells(3, 16).Value = Ticker
+                ws.Cells(3, 17).Value = PercentChange
+                ws.Cells(3, 17).NumberFormat = "0.00%"
+                CurrentMin = PercentChange
+            End If
+   
+'Calculate Total Stock Volume
+   
+        TotalVolume = TotalVolume + ws.Cells(i, 7).Value
+        ws.Cells(tickercounter, 12).Value = TotalVolume
+        
+            If TotalVolume > MaxVol Then
+                ws.Cells(4, 16).Value = Ticker
+                ws.Cells(4, 17).Value = TotalVolume
+                MaxVol = TotalVolume
+            
+            End If
+         tickercounter = tickercounter + 1
+        TotalVolume = 0
+        
+        Else
+            TotalVolume = TotalVolume + ws.Cells(i, 7).Value
+            
+            
+        End If
+        
+    Next i
+    
+    CurrentMax = 0
+    CurrentMin = 0
+    MaxVol = 0
+    
+    FinalYearChange = ws.Cells(Rows.Count, "J").End(xlUp).Row
+    
+ 'Conditional formatting for cells
+    
+    For i = 2 To FinalYearChange
+        If ws.Cells(i, 10) > 0 Then
+            ws.Cells(i, 10).Interior.ColorIndex = 4
+        Else
+            ws.Cells(i, 10).Interior.ColorIndex = 3
+        End If
+    Next i
+    
+ 'Next ws in workbook
+ 
+    Next
+
+End Sub
